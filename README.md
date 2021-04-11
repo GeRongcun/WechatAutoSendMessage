@@ -1,4 +1,4 @@
-**摘要：**利用Pywinauto库，模拟键盘鼠标操作微信，自动发送提醒消息，提醒大家完成“青年大学习”。
+**摘要：** 利用Pywinauto库，模拟键盘鼠标操作微信，自动发送提醒消息，提醒大家完成“青年大学习”。
 
 ## 引言
 
@@ -55,3 +55,16 @@ Pywinauto是一组用于自动化Microsoft Windows GUI的python模块。 最简�
 [Pywinauto中文文档](https://www.kancloud.cn/gnefnuy/pywinauto_doc/1193035)  
 [python基于pywinauto实现PC端自动化 python操作微信自动化](https://www.cnblogs.com/xp1315458571/p/13892205.html)  
 [Pywinauto笔记ByRowingMan_v1.0.docx](Pywinauto笔记ByRowingMan_v1.0.docx)
+
+## 文件结构
+
+**UISpy.exe**  
+定位工具，用于确定窗口、控件的名称  
+**chromedriver_v89.0.4389.23.exe**  
+google为网站开发人员提供的自动化测试接口，它是 selenium2 和 chrome浏览器 进行通信的桥梁。  
+**通知模板.txt**  
+群发消息的通知模板  
+**通知模板群发.txt**  
+私发消息的通知模板  
+**微信机器人20210410v1.1.py**  
+代码文件
