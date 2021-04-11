@@ -1,0 +1,4 @@
+${Name}，${Greet}！{VK_RETURN}
+打扰了，烦请在“江苏共青团”微信公众号完成青年大学习【第十一季第四期】，谢谢！{VK_RETURN}
+学习完成后，请填写《${DocumentName}》（${DocumentUrl}）
+
