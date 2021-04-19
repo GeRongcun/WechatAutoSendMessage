@@ -29,9 +29,9 @@ import psutil
 # downloadFloder：下载位置，Excel表格将导出到该文件夹
 # fileName：腾讯文档的名称，也是Excel表格的名称
 
-def downloadTencentExcel(url,downloadFloder,fileName):
+def downloadTencentExcel(url,downloadFloder,fileName,chromedriverFile):
     # selenium启动WebDriver
-    driver = webdriver.Chrome(r"D:\00Data\00Code\20210408微信机器人_青年大学习\chromedriver_v89.0.4389.23.exe")
+    driver = webdriver.Chrome(chromedriverFile)
     # 注意chromedriver的版本与chrome的版本对应； chromedriver下载网址：http://chromedriver.chromium.org/downloads
 
     # 因为涉及多次导出，如果在“下载”文件夹中存在该文件，则先删除。
@@ -104,18 +104,16 @@ def NameList(downloadFloder,fileName,rows,colName):
 # 示例：GetWeChatPID('WeChat.exe')
 def GetWeChatPID(name):
     # 获得全部进程的ID
-    pids=psutil.pids()
+    # pids=psutil.pids()
+    pids = psutil.process_iter()
     # 遍历全部进程ID
     for pid in pids:
-        # 进程
-        p = psutil.Process(pid)
-        # 如果找到进程名称，则中止循环
-        # print(p.name())
-        if(p.name()==name):
-            WeChatPID=pid
-            break
-    # 输出进程ID
-    return WeChatPID
+        if(pid.name()==name):
+            # 输出进程ID
+            return pid.pid
+    # 没有找到则输出0
+    return 0
+
 
 # 连接微信，返回微信左上角搜索框的位置
 # PID：进程ID
@@ -164,9 +162,9 @@ def ReadTemplate(txtTemplateFile):
 def Greet():
     # 获得当前时间
     now = datetime.datetime.now()
-    # 12点之前，为早上好
+    # 12点之前，为上午好
     if now.hour <= 12:
-        return '早上好'
+        return '上午好'
     # 12点之后，18点之前，为下午好
     elif now.hour <= 18:
         return '下午好'
@@ -176,26 +174,28 @@ def Greet():
 
 # 发送提醒消息，私发消息
 # nameList：没有学习同学数组
-def SendMessagePrivateChat(nameList):
+def SendMessagePrivateChat(nameList,cords):
     # 确定问候语
     greet=Greet()
     # 读取模板
     message=ReadTemplate(txtTemplateFile)
     for name in nameList:
-        # 填写模板变量
-        msg=message.substitute(Name=name[-2:len(name)],Greet=greet,DocumentName=documentName,DocumentUrl=url)
-        # 输出消息
-        print(msg)
         # 进入聊天姐买你
         EnterChatInterface(cords,name)
         time.sleep(1)
+
+        # 填写模板变量
+        msg=message.substitute(Name=name[-2:len(name)],Greet=greet,DocumentName=documentName,DocumentUrl=url,Stage=Stage)
+        # 输出消息
+        print(msg)
         # 键盘输入消息
         send_keys(msg)
+        time.sleep(2)
         # ctrl+enter发送消息
         send_keys('^{ENTER}')
 
 # 发送提醒消息，在群里发送消息
-def SendMessageGroup(groupName,nameList):
+def SendMessageGroup(groupName,nameList,cords):
     # 确定问候语
     greet=Greet()
     # 读取模板
@@ -218,10 +218,23 @@ def SendMessageGroup(groupName,nameList):
         send_keys('{ENTER}')
         time.sleep(1)
     # 填写模板变量
-    msg=message.substitute(Greet=greet,DocumentName=documentName,DocumentUrl=url)
+    msg=message.substitute(Greet=greet,DocumentName=documentName,DocumentUrl=url,Stage=Stage)
     send_keys(msg)
     # ctrl+enter发送消息
     send_keys('^{ENTER}')
+
+
+####################################################
+# 经常使用的位置
+# cords
+# <RECT L92, T23, R242, B48>
+# 查看cords的用法
+# type(cords)
+# <class 'pywinauto.win32structures.RECT'>
+# help(pywinauto.win32structures.RECT) 
+
+# 微信全屏下, 搜索框的位置
+search_cord=pywinauto.win32structures.RECT(92, 23, 242, 48)
 
 # 全局参数
 # 文件名，Excel表格名称
@@ -231,33 +244,46 @@ fileName=documentName+'.xlsx'
 # 班级群名
 groupName='GIS班的小可爱们'
 # 下载位置，Excel表格将导出到该文件夹
-downloadFloder=r'C:\Users\vgp\Downloads'
+downloadFloder=r'C:\Users\GeRongcun\Downloads'
 # py代码所在的文件夹
-codeFolder=r'D:\00Data\00Code\20210408微信机器人_青年大学习'
+codeFolder=r'D:\00Gerc\XueXi20200104\00Desktop\我的笔记20200311\00葛荣存\个人项目笔记\20210408微信机器人_青年大学习\20210419青年大学习第五期'
+# 腾讯文档url
+url='https://docs.qq.com/sheet/DU2NzQ3Z0Qm5nVk5j'
+# chromedriver位置
+chromedriverFile=os.path.join(codeFolder, 'chromedriver_v88.0.4324.96.exe')
+# 通知模板txt文件名称
 txtTemplateFile_qun='通知模板群发.txt'
 txtTemplateFile='通知模板.txt'
-emailFile='班级同学邮箱.xlsx'
-url='https://docs.qq.com/sheet/DU2NzQ3Z0Qm5nVk5j'
+# 需要忽略的行数，Excel表格前几行可能无关，需要剔除掉
+rows=1
+# 列名称，该列判断是否学习
+colName='第十一季\n第五期'
+Stage='第十一季第五期'
 
-def main():
-    downloadTencentExcel(url,downloadFloder,fileName)
-    nameList=NameList()
+# 测试数据
+nameList=['校园十大鸽星','文件传输助手','文件传输助手','划水经验分享']
+
+def main(search_cord):
+    downloadTencentExcel(url,downloadFloder,fileName,chromedriverFile)
+    nameList=NameList(downloadFloder,fileName,rows,colName)
     print(nameList)
-    # SendMessage(nameList)
     # 私发消息
-    SendMessageQun(groupName,nameList)
+    SendMessagePrivateChat(nameList,search_cord)
     # 在群里发消息
+    SendMessageGroup(groupName,nameList,search_cord)
 
 if __name__ == '__main__':
-    PID=GetWeChatPID()
-    cords=ConnectWechat(PID)
+    PID=GetWeChatPID('WeChat.exe')
+    # ConnectWechat函数的目的是定位到搜索框的位置，但是运行时间太长了
+    # search_cord=ConnectWechat(PID)
+    # 可以只运行一次ConnectWechat函数，记录下位置，下次直接按照位置初始化search_cord
+    search_cord=pywinauto.win32structures.RECT(92, 23, 242, 48)
+    
     while True:
         h={10,15,17,21}
         now = datetime.datetime.now()
         # print(now.__format__('%H:%M:%S'))
         if now.hour in h and now.minute==0:
         # if True:
-            main()
+            main(search_cord)
         time.sleep(50)
-
-
